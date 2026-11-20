@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo_pagina }} - GameHub{% endblock %}
+
+{% block content %}
+<div class="container py-2">
+  <div class="row justify-content-center">
+    <div class="col-lg-9 col-xl-8">
+      
+      <!-- Card do Formulário -->
+      <div class="p-4 p-md-5 rounded-4 shadow" style="background: var(--bg-card); border: 1px solid var(--border-color);">
+        
+        <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom border-secondary">
+          <div>
+            <h2 class="text-light mb-1">
+              <i class="bi bi-controller brand-accent me-2"></i>{{ titulo_pagina }}
+            </h2>
+            <p class="text-secondary small mb-0">Preencha as informações do jogo para divulgá-lo no portal</p>
+          </div>
+          <a href="{% if jogo %}{{ jogo.get_absolute_url }}{% else %}{% url 'games:index' %}{% endif %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Voltar
+          </a>
+        </div>
+
+        {% if form.errors %}
+          <div class="alert alert-danger border-0">
+            <strong><i class="bi bi-exclamation-triangle-fill me-1"></i> Por favor, corrija os erros abaixo:</strong>
+            <ul class="mb-0 mt-2">
+              {% for field in form %}
+                {% for error in field.errors %}
+                  <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                {% endfor %}
+              {% endfor %}
+              {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+
+          <!-- Seção 1: Identificação -->
+          <div class="mb-4">
+            <h5 class="text-info mb-3"><i class="bi bi-info-circle me-2"></i>Informações Básicas</h5>
+            
+            <div class="row g-3">
+              <div class="col-md-8">
+                <label for="{{ form.titulo.id_for_label }}" class="form-label text-secondary small fw-semibold">
+                  Título do Jogo <span class="text-danger">*</span>
+                </label>
+                {{ form.titulo }}
+              </div>
+              <div class="col-md-4">
+                <label for="{{ form.categoria.id_for_label }}" class="form-label text-secondary small fw-semibold">
+                  Categoria / Gênero <span class="text-danger">*</span>
+                </label>
+                {{ form.categoria }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Seção 2: Produção & Preço -->
+          <div class="mb-4">
+            <h5 class="text-info mb-3"><i class="bi bi-building me-2"></i>Desenvolvimento & Plataformas</h5>
+            
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="{{ form.desenvolvedora.id_for_label }}" class="form-label text-secondary small fw-semibold">
+                  Desenvolvedora / Estúdio <span class="text-danger">*</span>
+                </label>
+                {{ form.desenvolvedora }}
+              </div>
+              <div class="col-md-6">
+                <label for="{{ form.distribuidora.id_for_label }}" class="form-label text-secondary small fw-semibold">
+                  Distribuidora (Publisher)
+                </label>
+                {{ form.distribuidora }}
+              </div>
+              <div class="col-md-6">
+                <label for="{{ form.plataforma.id_for_label }}" class="form-label text-secondary small fw-semibold">
+                  Plataformas Suportadas <span class="text-danger">*</span>
+                </label>
+                {{ form.plataforma }}
+                <div class="form-text text-muted small">Ex: PC, PS5, Xbox Series X, Nintendo Switch</div>
+              </div>
+              <div class="col-md-3">
+                <label for="{{ form.data_lancamento.id_for_label }}" class="form-label text-secondary small fw-semibold">
+                  Data de Lançamento <span class="text-danger">*</span>
+                </label>
+                {{ form.data_lancamento }}
+              </div>
+              <div class="col-md-3">
+                <label for="{{ form.preco.id_for_label }}" class="form-label text-secondary small fw-semibold">
+                  Preço Sugerido (R$) <span class="text-danger">*</span>
+                </label>
+                {{ form.preco }}
+                <div class="form-text text-muted small">0.00 para Grátis</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Seção 3: Imagens & Trailer -->
+          <div class="mb-4">
+            <h5 class="text-info mb-3"><i class="bi bi-images me-2"></i>Capa & Mídias</h5>
+            
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="{{ form.imagem.id_for_label }}" class="form-label text-secondary small fw-semibold">
+                  Upload de Imagem de Capa
+                </label>
+                {{ form.imagem }}
+                <div class="form-text text-muted small">Envie um arquivo PNG ou JPG do seu computador.</div>
+              </div>
+              <div class="col-md-6">
+                <label for="{{ form.imagem_url.id_for_label }}" class="form-label text-secondary small fw-semibold">
+                  OU Link Direto da Imagem de Capa
+                </label>
+                {{ form.imagem_url }}
+                <div class="form-text text-muted small">URL direta (ex: Unsplash, Steam CDN, etc.)</div>
+              </div>
+              <div class="col-md-6">
+                <label for="{{ form.trailer_url.id_for_label }}" class="form-label text-secondary small fw-semibold">
+                  Link do Trailer no YouTube
+                </label>
+                {{ form.trailer_url }}
+                <div class="form-text text-muted small">Ex: https://www.youtube.com/watch?v=VIDEO_ID</div>
+              </div>
+              <div class="col-md-6">
+                <label for="{{ form.site_oficial.id_for_label }}" class="form-label text-secondary small fw-semibold">
+                  Site Oficial ou Página na Loja
+                </label>
+                {{ form.site_oficial }}
+                <div class="form-text text-muted small">Link para Steam, Epic Games, PlayStation Store, etc.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Seção 4: Sinopse -->
+          <div class="mb-4">
+            <h5 class="text-info mb-3"><i class="bi bi-file-text me-2"></i>Descrição Completa</h5>
+            <label for="{{ form.descricao.id_for_label }}" class="form-label text-secondary small fw-semibold">
+              Sinopse, mecânicas e pontos fortes do jogo <span class="text-danger">*</span>
+            </label>
+            {{ form.descricao }}
+          </div>
+
+          <div class="d-flex justify-content-end gap-3 pt-3 border-top border-secondary">
+            <a href="{% if jogo %}{{ jogo.get_absolute_url }}{% else %}{% url 'games:index' %}{% endif %}" class="btn btn-outline-light px-4">
+              Cancelar
+            </a>
+            <button type="submit" class="btn btn-cyan px-4">
+              <i class="bi bi-check-circle-fill me-1"></i> {{ botao_texto }}
+            </button>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

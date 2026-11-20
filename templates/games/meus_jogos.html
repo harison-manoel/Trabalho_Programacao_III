@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Meus Jogos Cadastrados - GameHub{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+  
+  <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+    <div>
+      <h2 class="text-light mb-1">
+        <i class="bi bi-collection-play-fill text-info me-2"></i> Meus Jogos Divulgados
+      </h2>
+      <p class="text-secondary small mb-0">Gerencie todos os títulos que você compartilhou com a comunidade ({{ total }} jogo{{ total|pluralize:"s" }})</p>
+    </div>
+    <a href="{% url 'games:cadastrar_jogo' %}" class="btn btn-cyan">
+      <i class="bi bi-plus-circle me-1"></i> Divulgar Novo Jogo
+    </a>
+  </div>
+
+  {% if jogos %}
+    <div class="row g-4">
+      {% for jogo in jogos %}
+        <div class="col-md-6 col-lg-4">
+          <div class="game-card">
+            
+            <div class="game-card-img-wrapper">
+              <img src="{{ jogo.get_capa }}" class="game-card-img" alt="{{ jogo.titulo }}">
+              <span class="badge-category">
+                <i class="bi {{ jogo.categoria.icone }} me-1"></i>{{ jogo.categoria.nome }}
+              </span>
+              {% if jogo.preco == 0 %}
+                <span class="badge-price">GRÁTIS</span>
+              {% else %}
+                <span class="badge-price paid">R$ {{ jogo.preco }}</span>
+              {% endif %}
+            </div>
+
+            <div class="p-3 d-flex flex-column flex-grow-1">
+              <h5 class="fw-bold text-light mb-1">{{ jogo.titulo }}</h5>
+              <div class="text-secondary small mb-2">{{ jogo.desenvolvedora }} &bull; {{ jogo.data_lancamento|date:"Y" }}</div>
+
+              <div class="d-flex align-items-center gap-2 mb-3 small">
+                {% if jogo.nota_media %}
+                  <span class="text-warning"><i class="bi bi-star-fill"></i> {{ jogo.nota_media|floatformat:1 }}</span>
+                  <span class="text-muted">({{ jogo.num_avaliacoes }} avaliaç{{ jogo.num_avaliacoes|pluralize:"ão,ões" }})</span>
+                {% else %}
+                  <span class="text-muted"><i class="bi bi-star"></i> Sem avaliações</span>
+                {% endif %}
+              </div>
+
+              <!-- Ações do Dono -->
+              <div class="mt-auto pt-3 border-top border-secondary d-flex justify-content-between align-items-center">
+                <a href="{{ jogo.get_absolute_url }}" class="btn btn-sm btn-outline-light">
+                  <i class="bi bi-eye"></i> Ver
+                </a>
+                <div class="d-flex gap-2">
+                  <a href="{% url 'games:editar_jogo' slug=jogo.slug %}" class="btn btn-sm btn-warning text-dark fw-semibold">
+                    <i class="bi bi-pencil"></i> Editar
+                  </a>
+                  <a href="{% url 'games:deletar_jogo' slug=jogo.slug %}" class="btn btn-sm btn-outline-danger">
+                    <i class="bi bi-trash3"></i>
+                  </a>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="text-center py-5 p-4 rounded-3" style="background: var(--bg-card); border: 1px dashed var(--border-color);">
+      <i class="bi bi-joystick fs-1 text-secondary mb-3 d-block"></i>
+      <h4 class="text-light">Você ainda não divulgou nenhum jogo</h4>
+      <p class="text-secondary mb-4">Compartilhe jogos com a comunidade e receba avaliações e comentários de outros jogadores!</p>
+      <a href="{% url 'games:cadastrar_jogo' %}" class="btn btn-cyan">
+        <i class="bi bi-plus-circle me-1"></i> Divulgar Meu Primeiro Jogo
+      </a>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,304 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ jogo.titulo }} - GameHub{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <!-- Breadcrumbs -->
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'games:index' %}" class="text-cyan text-decoration-none">Início</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'games:index' %}?categoria={{ jogo.categoria.slug }}#catalogo" class="text-cyan text-decoration-none">{{ jogo.categoria.nome }}</a></li>
+      <li class="breadcrumb-item active text-secondary" aria-current="page">{{ jogo.titulo }}</li>
+    </ol>
+  </nav>
+
+  <!-- Cabeçalho do Jogo (Hero Card) -->
+  <div class="p-4 p-lg-5 mb-5 rounded-4 position-relative" style="background: var(--bg-card); border: 1px solid var(--border-color);">
+    <div class="row g-4 align-items-center">
+      
+      <!-- Imagem de Capa -->
+      <div class="col-md-5 col-lg-4 text-center">
+        <div class="position-relative rounded-3 overflow-hidden shadow-lg border border-secondary" style="max-height: 420px;">
+          <img src="{{ jogo.get_capa }}" alt="{{ jogo.titulo }}" class="img-fluid w-100" style="object-fit: cover; min-height: 280px;">
+        </div>
+      </div>
+
+      <!-- Informações Principais -->
+      <div class="col-md-7 col-lg-8">
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+          <span class="badge px-3 py-2" style="background: rgba(0, 229, 255, 0.15); color: #00e5ff; border: 1px solid rgba(0, 229, 255, 0.4);">
+            <i class="bi {{ jogo.categoria.icone }} me-1"></i> {{ jogo.categoria.nome }}
+          </span>
+          {% if jogo.destaque %}
+            <span class="badge bg-warning text-dark px-3 py-2">
+              <i class="bi bi-star-fill me-1"></i> Destaque da Comunidade
+            </span>
+          {% endif %}
+          {% if jogo.preco == 0 %}
+            <span class="badge bg-success px-3 py-2 fs-6">GRÁTIS (Free to Play)</span>
+          {% else %}
+            <span class="badge bg-dark border border-secondary px-3 py-2 fs-6 text-light">R$ {{ jogo.preco }}</span>
+          {% endif %}
+        </div>
+
+        <h1 class="display-5 fw-bold text-light mb-2">{{ jogo.titulo }}</h1>
+
+        <!-- Informações de Estúdio / Distribuidora -->
+        <p class="text-secondary fs-6 mb-3">
+          Por <strong>{{ jogo.desenvolvedora }}</strong>
+          {% if jogo.distribuidora %}
+            &bull; Publicado por <em>{{ jogo.distribuidora }}</em>
+          {% endif %}
+          &bull; Lançado em <strong>{{ jogo.data_lancamento|date:"d/m/Y" }}</strong>
+        </p>
+
+        <!-- Plataformas -->
+        <div class="mb-4">
+          <span class="text-secondary small d-block mb-1">Plataformas Suportadas:</span>
+          <div class="d-flex flex-wrap gap-2">
+            {% for plat in jogo.plataforma.split %}
+              <span class="badge bg-dark border border-secondary text-secondary py-1 px-2">{{ plat }}</span>
+            {% empty %}
+              <span class="badge bg-dark border border-secondary text-secondary py-1 px-2">{{ jogo.plataforma }}</span>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Média de Avaliações -->
+        <div class="d-flex align-items-center gap-3 p-3 rounded-3 mb-4" style="background: rgba(11, 15, 25, 0.7); border: 1px solid var(--border-color); width: fit-content;">
+          {% if jogo.media_avaliacoes %}
+            <div class="text-warning fs-3 fw-bold">
+              <i class="bi bi-star-fill me-1"></i>{{ jogo.media_avaliacoes }}
+            </div>
+            <div>
+              <div class="text-light fw-semibold">Nota dos Jogadores</div>
+              <div class="text-secondary small">{{ jogo.total_avaliacoes }} avaliaç{{ jogo.total_avaliacoes|pluralize:"ão,ões" }} registradas</div>
+            </div>
+          {% else %}
+            <div class="text-secondary fs-4">
+              <i class="bi bi-star me-1"></i>
+            </div>
+            <div>
+              <div class="text-light fw-semibold">Ainda sem avaliações</div>
+              <div class="text-secondary small">Seja o primeiro a dar sua nota!</div>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+          {% if jogo.site_oficial %}
+            <a href="{{ jogo.site_oficial }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-cyan">
+              <i class="bi bi-box-arrow-up-right me-1"></i> Site / Loja Oficial
+            </a>
+          {% endif %}
+
+          <!-- AÇÕES DO AUTOR OU ADMIN -->
+          {% if user == jogo.criado_por or user.is_staff %}
+            <a href="{% url 'games:editar_jogo' slug=jogo.slug %}" class="btn btn-warning text-dark fw-bold">
+              <i class="bi bi-pencil-square me-1"></i> Editar Jogo
+            </a>
+            <a href="{% url 'games:deletar_jogo' slug=jogo.slug %}" class="btn btn-outline-danger">
+              <i class="bi bi-trash3 me-1"></i> Excluir
+            </a>
+          {% endif %}
+        </div>
+
+        <!-- Autor do Cadastro -->
+        <div class="mt-4 pt-3 border-top border-secondary text-secondary small">
+          <i class="bi bi-person-check me-1"></i> Divulgado por: <strong>@{{ jogo.criado_por.username }}</strong> 
+          ({{ jogo.criado_por.first_name|default:"Membro" }}) em {{ jogo.criado_em|date:"d/m/Y H:i" }}
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Detalhes do Jogo (Sinopse e Trailer) -->
+  <div class="row g-4 mb-5">
+    
+    <!-- Coluna da Sinopse -->
+    <div class="{% if jogo.youtube_embed_id %}col-lg-6{% else %}col-12{% endif %}">
+      <div class="p-4 rounded-3 h-100" style="background: var(--bg-card); border: 1px solid var(--border-color);">
+        <h3 class="text-light mb-3">
+          <i class="bi bi-journal-text brand-accent me-2"></i> Sinopse & Informações
+        </h3>
+        <div class="text-secondary" style="line-height: 1.8; white-space: pre-line;">
+          {{ jogo.descricao }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Coluna do Trailer (Se houver link do YouTube) -->
+    {% if jogo.youtube_embed_id %}
+      <div class="col-lg-6">
+        <div class="p-4 rounded-3 h-100" style="background: var(--bg-card); border: 1px solid var(--border-color);">
+          <h3 class="text-light mb-3">
+            <i class="bi bi-play-circle-fill text-danger me-2"></i> Trailer Oficial
+          </h3>
+          <div class="video-responsive shadow">
+            <iframe 
+              src="https://www.youtube.com/embed/{{ jogo.youtube_embed_id }}" 
+              title="Trailer de {{ jogo.titulo }}" 
+              frameborder="0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen>
+            </iframe>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- SEÇÃO DE AVALIAÇÕES (Requisitos 1, 2 e 3)                          -->
+  <!-- ================================================================= -->
+  <section class="mb-5" id="avaliacoes">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <div>
+        <h3 class="text-light mb-1">
+          <i class="bi bi-chat-heart-fill text-danger me-2"></i> Análises dos Jogadores
+        </h3>
+        <p class="text-secondary small mb-0">Opiniões de quem já jogou este título</p>
+      </div>
+      <span class="badge bg-secondary fs-6">{{ avaliacoes.count }} análise(s)</span>
+    </div>
+
+    <div class="row g-4">
+      
+      <!-- Formulário de Avaliação (Esquerda) -->
+      <div class="col-lg-5">
+        <div class="p-4 rounded-3 sticky-top" style="top: 90px; background: var(--bg-card); border: 1px solid var(--border-color);">
+          
+          {% if user.is_authenticated %}
+            <!-- USUÁRIO AUTENTICADO: Pode cadastrar/editar avaliação -->
+            <h4 class="text-light mb-3">
+              <i class="bi bi-pencil-fill text-warning me-2"></i>
+              {% if minha_avaliacao %}Atualizar Sua Avaliação{% else %}Deixar Sua Avaliação{% endif %}
+            </h4>
+
+            <form action="{% url 'games:adicionar_avaliacao' slug=jogo.slug %}" method="post">
+              {% csrf_token %}
+              
+              <div class="mb-3">
+                <label for="id_nota" class="form-label text-secondary small fw-semibold">Sua Nota:</label>
+                {{ form_avaliacao.nota }}
+              </div>
+
+              <div class="mb-3">
+                <label for="id_titulo" class="form-label text-secondary small fw-semibold">Título do Resumo:</label>
+                {{ form_avaliacao.titulo }}
+              </div>
+
+              <div class="mb-3 form-check form-switch">
+                {{ form_avaliacao.recomenda }}
+                <label class="form-check-label text-light small" for="id_recomenda">
+                  Você recomenda este jogo?
+                </label>
+              </div>
+
+              <div class="mb-3">
+                <label for="id_comentario" class="form-label text-secondary small fw-semibold">Comentário Completo:</label>
+                {{ form_avaliacao.comentario }}
+              </div>
+
+              <button type="submit" class="btn btn-cyan w-100 py-2">
+                <i class="bi bi-send-fill me-1"></i>
+                {% if minha_avaliacao %}Salvar Alterações da Avaliação{% else %}Publicar Minha Avaliação{% endif %}
+              </button>
+            </form>
+
+          {% else %}
+            <!-- USUÁRIO NÃO LOGADO: AÇÃO BLOQUEADA (REQUISITO 3) -->
+            <div class="text-center py-4">
+              <div class="rounded-circle d-inline-flex p-3 mb-3" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3);">
+                <i class="bi bi-shield-lock-fill fs-1 text-warning"></i>
+              </div>
+              <h5 class="text-light mb-2">Quer avaliar este jogo?</h5>
+              <p class="text-secondary small mb-4">
+                Por motivos de segurança e integridade das notas, <strong>apenas usuários cadastrados e conectados</strong> podem publicar análises e comentários.
+              </p>
+              <div class="d-grid gap-2">
+                <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-outline-cyan">
+                  <i class="bi bi-box-arrow-in-right me-1"></i> Fazer Login
+                </a>
+                <a href="{% url 'cadastro' %}" class="btn btn-purple">
+                  <i class="bi bi-person-plus-fill me-1"></i> Criar Conta Gratuita
+                </a>
+              </div>
+            </div>
+          {% endif %}
+
+        </div>
+      </div>
+
+      <!-- Lista de Avaliações Registradas (Direita) -->
+      <div class="col-lg-7">
+        {% if avaliacoes %}
+          <div class="d-flex flex-column gap-3">
+            {% for av in avaliacoes %}
+              <div class="review-card">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" style="width: 38px; height: 38px; background: linear-gradient(135deg, #00e5ff, #8b5cf6);">
+                      {{ av.usuario.username|make_list|first|upper }}
+                    </div>
+                    <div>
+                      <div class="text-light fw-bold">@{{ av.usuario.username }}</div>
+                      <div class="text-secondary" style="font-size: 0.75rem;">{{ av.criado_em|date:"d/m/Y \à\s H:i" }}</div>
+                    </div>
+                  </div>
+
+                  <!-- Badge de Recomendação e Estrelas -->
+                  <div class="text-end">
+                    <div class="text-warning small mb-1">
+                      {% for i in "12345"|make_list %}
+                        {% if forloop.counter <= av.nota %}
+                          <i class="bi bi-star-fill"></i>
+                        {% else %}
+                          <i class="bi bi-star"></i>
+                        {% endif %}
+                      {% endfor %}
+                    </div>
+                    {% if av.recomenda %}
+                      <span class="badge bg-success small"><i class="bi bi-hand-thumbs-up-fill me-1"></i> Recomenda</span>
+                    {% else %}
+                      <span class="badge bg-danger small"><i class="bi bi-hand-thumbs-down-fill me-1"></i> Não Recomenda</span>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <h6 class="text-light fw-bold mt-2 mb-1">{{ av.titulo }}</h6>
+                <p class="text-secondary mb-2" style="font-size: 0.92rem; white-space: pre-line;">{{ av.comentario }}</p>
+
+                {% if user == av.usuario or user.is_staff %}
+                  <div class="text-end pt-2 border-top border-secondary">
+                    <form action="{% url 'games:deletar_avaliacao' id=av.id %}" method="post" class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir sua avaliação?');">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm btn-link text-danger p-0 text-decoration-none">
+                        <i class="bi bi-trash3 me-1"></i> Excluir minha avaliação
+                      </button>
+                    </form>
+                  </div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center py-5 p-4 rounded-3" style="background: var(--bg-card); border: 1px dashed var(--border-color);">
+            <i class="bi bi-chat-square-text fs-2 text-secondary mb-2 d-block"></i>
+            <h5 class="text-light">Ainda não há análises para este jogo</h5>
+            <p class="text-secondary small mb-0">Compartilhe sua experiência e ajude outros gamers a decidirem se vale a pena jogar!</p>
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+  </section>
+
+</div>
+{% endblock %}

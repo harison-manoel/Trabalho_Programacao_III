@@ -1,0 +1,292 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}GameHub - Descubra, Divulgue e Avalie os Melhores Jogos{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <!-- Hero Section -->
+  <section class="hero-banner mb-5 text-center text-lg-start">
+    <div class="row align-items-center gy-4">
+      <div class="col-lg-7">
+        <span class="badge px-3 py-2 rounded-pill mb-3 text-uppercase" style="background: rgba(0, 229, 255, 0.15); color: #00e5ff; border: 1px solid rgba(0, 229, 255, 0.3);">
+          <i class="bi bi-fire me-1"></i> Comunidade Gamer do IFRO
+        </span>
+        <h1 class="display-4 fw-bold text-light mb-3">
+          O SEU PORTAL DEFINITIVO PARA <span class="brand-accent">DIVULGAR</span> E DESCOBRIR JOGOS
+        </h1>
+        <p class="lead text-secondary mb-4">
+          Conheça lançamentos épicos, títulos independentes e compartilhe seus jogos favoritos. 
+          Cadastre sua conta para avaliar e divulgar novos jogos para a comunidade!
+        </p>
+        <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-lg-start">
+          <a href="#catalogo" class="btn btn-cyan btn-lg px-4">
+            <i class="bi bi-controller me-2"></i> Explorar Catálogo
+          </a>
+          {% if user.is_authenticated %}
+            <a href="{% url 'games:cadastrar_jogo' %}" class="btn btn-outline-cyan btn-lg px-4">
+              <i class="bi bi-cloud-arrow-up me-2"></i> Divulgar um Jogo
+            </a>
+          {% else %}
+            <a href="{% url 'cadastro' %}" class="btn btn-purple btn-lg px-4">
+              <i class="bi bi-person-plus me-2"></i> Criar Minha Conta
+            </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Stats Bar -->
+      <div class="col-lg-5">
+        <div class="row g-3">
+          <div class="col-6">
+            <div class="stat-box">
+              <div class="stat-number">{{ estatisticas.total_jogos }}</div>
+              <div class="text-secondary small mt-1"><i class="bi bi-joystick me-1"></i> Jogos Cadastrados</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="stat-box">
+              <div class="stat-number" style="color: #8b5cf6;">{{ estatisticas.total_categorias }}</div>
+              <div class="text-secondary small mt-1"><i class="bi bi-tags me-1"></i> Categorias</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="stat-box">
+              <div class="stat-number" style="color: #f59e0b;">{{ estatisticas.total_avaliacoes }}</div>
+              <div class="text-secondary small mt-1"><i class="bi bi-star-fill me-1"></i> Avaliações</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="stat-box">
+              <div class="stat-number" style="color: #10b981;">{{ estatisticas.total_usuarios }}</div>
+              <div class="text-secondary small mt-1"><i class="bi bi-people-fill me-1"></i> Membros Ativos</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Jogos em Destaque (Se houver) -->
+  {% if jogos_destaque and not busca and not categoria_selecionada %}
+    <section class="mb-5">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h3 class="mb-0 text-light"><i class="bi bi-lightning-charge-fill text-warning me-2"></i> Em Destaque na Comunidade</h3>
+      </div>
+      <div class="row g-4">
+        {% for destaque in jogos_destaque %}
+          <div class="col-md-6 col-lg-3">
+            <div class="game-card h-100">
+              <div class="game-card-img-wrapper">
+                <img src="{{ destaque.get_capa }}" class="game-card-img" alt="{{ destaque.titulo }}">
+                <span class="badge-category">
+                  <i class="bi {{ destaque.categoria.icone }} me-1"></i>{{ destaque.categoria.nome }}
+                </span>
+                {% if destaque.preco == 0 %}
+                  <span class="badge-price">GRÁTIS</span>
+                {% else %}
+                  <span class="badge-price paid">R$ {{ destaque.preco }}</span>
+                {% endif %}
+              </div>
+              <div class="p-3 d-flex flex-column flex-grow-1">
+                <h5 class="fw-bold mb-1 text-truncate text-light">{{ destaque.titulo }}</h5>
+                <p class="text-muted small mb-2">{{ destaque.desenvolvedora }}</p>
+                <div class="mt-auto d-flex align-items-center justify-content-between pt-2 border-top border-secondary">
+                  <div class="small">
+                    {% if destaque.media_avaliacoes %}
+                      <span class="text-warning"><i class="bi bi-star-fill"></i> {{ destaque.media_avaliacoes }}</span>
+                    {% else %}
+                      <span class="text-muted"><i class="bi bi-star"></i> Novo</span>
+                    {% endif %}
+                  </div>
+                  <a href="{{ destaque.get_absolute_url }}" class="btn btn-sm btn-outline-cyan">Detalhes</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+
+  <!-- Catálogo de Jogos Section Anchor -->
+  <section id="catalogo" class="mb-5">
+    
+    <!-- Header e Filtros de Categoria -->
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+      <div>
+        <h2 class="text-light mb-1">
+          <i class="bi bi-collection-play-fill brand-accent me-2"></i>
+          {% if categoria_selecionada %}
+            Jogos de {{ categoria_selecionada.nome }}
+          {% elif busca %}
+            Resultados para "{{ busca }}"
+          {% else %}
+            Catálogo Geral de Jogos
+          {% endif %}
+        </h2>
+        <p class="text-secondary small mb-0">Navegue pelas opções cadastradas pelos usuários</p>
+      </div>
+
+      <!-- Barra de Ordenação -->
+      <form method="get" class="d-flex align-items-center gap-2">
+        {% if busca %}
+          <input type="hidden" name="busca" value="{{ busca }}">
+        {% endif %}
+        {% if categoria_selecionada %}
+          <input type="hidden" name="categoria" value="{{ categoria_selecionada.slug }}">
+        {% endif %}
+        <label for="ordemSelect" class="text-secondary small text-nowrap">Ordenar por:</label>
+        <select name="ordem" id="ordemSelect" class="form-select form-select-sm form-control-dark" style="min-width: 170px;" onchange="this.form.submit()">
+          <option value="novos" {% if ordem == 'novos' %}selected{% endif %}>Mais Recentes</option>
+          <option value="nota" {% if ordem == 'nota' %}selected{% endif %}>Melhor Avaliados</option>
+          <option value="preco_menor" {% if ordem == 'preco_menor' %}selected{% endif %}>Menor Preço</option>
+          <option value="preco_maior" {% if ordem == 'preco_maior' %}selected{% endif %}>Maior Preço</option>
+          <option value="antigos" {% if ordem == 'antigos' %}selected{% endif %}>Mais Antigos</option>
+        </select>
+      </form>
+    </div>
+
+    <!-- Pílulas de Categorias -->
+    <div class="d-flex flex-wrap gap-2 mb-4 pb-2">
+      <a href="{% url 'games:index' %}{% if busca %}?busca={{ busca }}{% endif %}#catalogo" class="category-pill {% if not categoria_selecionada %}active{% endif %}">
+        <i class="bi bi-grid-fill"></i> Todos ({{ estatisticas.total_jogos }})
+      </a>
+      {% for cat in categorias %}
+        <a href="{% url 'games:index' %}?categoria={{ cat.slug }}{% if busca %}&busca={{ busca }}{% endif %}#catalogo" class="category-pill {% if categoria_selecionada.slug == cat.slug %}active{% endif %}">
+          <i class="bi {{ cat.icone }}"></i> {{ cat.nome }} ({{ cat.total }})
+        </a>
+      {% endfor %}
+    </div>
+
+    <!-- Grid de Jogos -->
+    {% if jogos %}
+      <div class="row g-4">
+        {% for jogo in jogos %}
+          <div class="col-md-6 col-lg-4">
+            <div class="game-card">
+              <!-- Imagem de Capa com Badges -->
+              <div class="game-card-img-wrapper">
+                <img src="{{ jogo.get_capa }}" class="game-card-img" alt="{{ jogo.titulo }}" loading="lazy">
+                <span class="badge-category">
+                  <i class="bi {{ jogo.categoria.icone }} me-1"></i>{{ jogo.categoria.nome }}
+                </span>
+                {% if jogo.preco == 0 %}
+                  <span class="badge-price">GRÁTIS</span>
+                {% else %}
+                  <span class="badge-price paid">R$ {{ jogo.preco }}</span>
+                {% endif %}
+              </div>
+
+              <!-- Conteúdo do Card -->
+              <div class="p-3 d-flex flex-column flex-grow-1">
+                <div class="d-flex justify-content-between align-items-start mb-1">
+                  <h5 class="fw-bold text-light mb-0">{{ jogo.titulo }}</h5>
+                </div>
+                <div class="text-secondary small mb-2">
+                  <i class="bi bi-buildings me-1"></i>{{ jogo.desenvolvedora }} &bull; {{ jogo.data_lancamento|date:"Y" }}
+                </div>
+
+                <!-- Plataformas -->
+                <div class="mb-3">
+                  <span class="badge bg-dark border border-secondary text-secondary small">
+                    <i class="bi bi-display me-1"></i>{{ jogo.plataforma|truncatechars:35 }}
+                  </span>
+                </div>
+
+                <!-- Descrição Curta -->
+                <p class="text-secondary small mb-3 flex-grow-1">
+                  {{ jogo.descricao|truncatewords:20 }}
+                </p>
+
+                <!-- Rodapé do Card -->
+                <div class="pt-3 border-top border-secondary mt-auto d-flex align-items-center justify-content-between">
+                  <div>
+                    {% if jogo.nota_media %}
+                      <div class="d-flex align-items-center gap-1">
+                        <span class="text-warning fw-bold"><i class="bi bi-star-fill"></i> {{ jogo.nota_media|floatformat:1 }}</span>
+                        <span class="text-muted small">({{ jogo.num_avaliacoes }})</span>
+                      </div>
+                    {% else %}
+                      <span class="text-muted small"><i class="bi bi-star"></i> Sem avaliações</span>
+                    {% endif %}
+                    <div class="text-muted" style="font-size: 0.72rem;">
+                      Por: <strong>@{{ jogo.criado_por.username }}</strong>
+                    </div>
+                  </div>
+
+                  <a href="{{ jogo.get_absolute_url }}" class="btn btn-sm btn-cyan">
+                    Ver Detalhes <i class="bi bi-arrow-right ms-1"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- Paginação -->
+      {% if jogos.has_other_pages %}
+        <nav class="mt-5 d-flex justify-content-center" aria-label="Navegação de páginas">
+          <ul class="pagination pagination-sm">
+            {% if jogos.has_previous %}
+              <li class="page-item">
+                <a class="page-link bg-dark text-cyan border-secondary" href="?page={{ jogos.previous_page_number }}{% if busca %}&busca={{ busca }}{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada.slug }}{% endif %}&ordem={{ ordem }}#catalogo">&laquo; Anterior</a>
+              </li>
+            {% else %}
+              <li class="page-item disabled"><span class="page-link bg-dark text-secondary border-secondary">&laquo; Anterior</span></li>
+            {% endif %}
+
+            {% for num in jogos.paginator.page_range %}
+              {% if jogos.number == num %}
+                <li class="page-item active"><span class="page-link bg-info text-dark border-info fw-bold">{{ num }}</span></li>
+              {% elif num > jogos.number|add:'-3' and num < jogos.number|add:'3' %}
+                <li class="page-item">
+                  <a class="page-link bg-dark text-light border-secondary" href="?page={{ num }}{% if busca %}&busca={{ busca }}{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada.slug }}{% endif %}&ordem={{ ordem }}#catalogo">{{ num }}</a>
+                </li>
+              {% endif %}
+            {% endfor %}
+
+            {% if jogos.has_next %}
+              <li class="page-item">
+                <a class="page-link bg-dark text-cyan border-secondary" href="?page={{ jogos.next_page_number }}{% if busca %}&busca={{ busca }}{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada.slug }}{% endif %}&ordem={{ ordem }}#catalogo">Próxima &raquo;</a>
+              </li>
+            {% else %}
+              <li class="page-item disabled"><span class="page-link bg-dark text-secondary border-secondary">Próxima &raquo;</span></li>
+            {% endif %}
+          </ul>
+        </nav>
+      {% endif %}
+
+    {% else %}
+      <!-- Estado Vazio (Nenhum jogo encontrado) -->
+      <div class="text-center py-5 my-4 p-4 rounded-3" style="background: var(--bg-card); border: 1px dashed var(--border-color);">
+        <i class="bi bi-controller fs-1 text-secondary mb-3 d-block"></i>
+        <h4 class="text-light">Nenhum jogo encontrado</h4>
+        <p class="text-secondary mb-4">
+          {% if busca %}
+            Não encontramos jogos correspondentes ao termo "<strong>{{ busca }}</strong>".
+          {% elif categoria_selecionada %}
+            Ainda não há jogos cadastrados na categoria "<strong>{{ categoria_selecionada.nome }}</strong>".
+          {% else %}
+            O catálogo ainda está vazio. Seja o primeiro a compartilhar um jogo!
+          {% endif %}
+        </p>
+        <div class="d-flex justify-content-center gap-3">
+          {% if busca or categoria_selecionada %}
+            <a href="{% url 'games:index' %}#catalogo" class="btn btn-outline-light">
+              <i class="bi bi-x-circle me-1"></i> Limpar Filtros
+            </a>
+          {% endif %}
+          <a href="{% url 'games:cadastrar_jogo' %}" class="btn btn-cyan">
+            <i class="bi bi-plus-circle me-1"></i> Divulgar Primeiro Jogo
+          </a>
+        </div>
+      </div>
+    {% endif %}
+
+  </section>
+
+</div>
+{% endblock %}

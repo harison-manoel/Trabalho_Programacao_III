@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Entrar no GameHub - Conecte sua Conta{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+      
+      <div class="p-4 p-md-5 rounded-4 shadow" style="background: var(--bg-card); border: 1px solid var(--border-color);">
+        
+        <div class="text-center mb-4">
+          <div class="rounded-circle d-inline-flex p-3 mb-3" style="background: rgba(0, 229, 255, 0.15); border: 1px solid rgba(0, 229, 255, 0.3);">
+            <i class="bi bi-controller fs-1 brand-accent"></i>
+          </div>
+          <h2 class="text-light fw-bold mb-1">Acesse sua Conta</h2>
+          <p class="text-secondary small">Entre para avaliar jogos e compartilhar novidades</p>
+        </div>
+
+        {% if form.errors %}
+          <div class="alert alert-danger border-0 small py-2">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i> Usuário ou senha inválidos. Tente novamente.
+          </div>
+        {% endif %}
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+          
+          <div class="mb-3">
+            <label for="id_username" class="form-label text-secondary small fw-semibold">
+              <i class="bi bi-person me-1"></i> Nome de Usuário (Gamer Tag)
+            </label>
+            <input type="text" name="username" autofocus required id="id_username" class="form-control form-control-dark" placeholder="Seu nome de usuário">
+          </div>
+
+          <div class="mb-4">
+            <label for="id_password" class="form-label text-secondary small fw-semibold">
+              <i class="bi bi-key me-1"></i> Senha de Acesso
+            </label>
+            <input type="password" name="password" required id="id_password" class="form-control form-control-dark" placeholder="Sua senha secreta">
+          </div>
+
+          <button type="submit" class="btn btn-cyan w-100 py-2 fw-bold mb-3">
+            <i class="bi bi-box-arrow-in-right me-1"></i> Entrar no Portal
+          </button>
+        </form>
+
+        <div class="text-center pt-3 border-top border-secondary">
+          <p class="text-secondary small mb-0">
+            Ainda não tem uma conta? 
+            <a href="{% url 'cadastro' %}" class="text-cyan text-decoration-none fw-semibold">
+              Cadastre-se aqui <i class="bi bi-arrow-right"></i>
+            </a>
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

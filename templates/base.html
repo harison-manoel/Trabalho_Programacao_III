@@ -1,0 +1,199 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}GameHub - Portal de Divulgação de Jogos{% endblock %}</title>
+
+  <!-- Google Fonts: Inter & Rajdhani -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Rajdhani:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap 5.3 Dark CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  
+  <!-- Custom Cyber Theme CSS -->
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+  <!-- Ambient background glow -->
+  <div class="ambient-glow"></div>
+
+  <!-- Main Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+    <div class="container">
+      <!-- Brand Logo -->
+      <a class="navbar-brand me-3" href="{% url 'games:index' %}">
+        <i class="bi bi-controller brand-accent fs-3"></i>
+        <span>GAME<span class="brand-accent">HUB</span></span>
+      </a>
+
+      <!-- Mobile Toggle Button -->
+      <button class="navbar-toggler border-0" type="button" data-bs-page data-bs-toggle="collapse" data-bs-target="#navMenu" aria-controls="navMenu" aria-expanded="false" aria-label="Menu de navegação">
+        <i class="bi bi-list text-light fs-2"></i>
+      </button>
+
+      <!-- Nav Links & Actions -->
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-lg-center ms-lg-3 gap-2">
+          <li class="nav-item">
+            <a class="nav-link-gaming" href="{% url 'games:index' %}">
+              <i class="bi bi-house-door"></i><span>Início</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link-gaming" href="{% url 'games:index' %}#catalogo">
+              <i class="bi bi-grid-3x3-gap"></i><span>Catálogo de Jogos</span>
+            </a>
+          </li>
+          {% if not user.is_authenticated %}
+            <li class="nav-item">
+              <a class="nav-link-gaming" href="{% url 'games:cadastrar_jogo' %}">
+                <i class="bi bi-plus-circle text-info"></i><span>Divulgar Jogo</span>
+              </a>
+            </li>
+          {% endif %}
+        </ul>
+
+        <!-- Search Bar -->
+        <form class="d-flex ms-lg-4 me-lg-3 my-2 my-lg-0" action="{% url 'games:index' %}" method="get">
+          <div class="input-group">
+            <input class="form-control form-control-dark" type="search" name="busca" placeholder="Buscar jogo, estúdio..." value="{{ request.GET.busca|default:'' }}" aria-label="Buscar">
+            <button class="btn btn-outline-cyan" type="submit">
+              <i class="bi bi-search"></i>
+            </button>
+          </div>
+        </form>
+
+        <!-- User Authentication Section -->
+        <ul class="navbar-nav align-items-lg-center gap-2">
+          {% if user.is_authenticated %}
+            <!-- Botão de Ação Rápida para Usuário Logado -->
+            <li class="nav-item">
+              <a href="{% url 'games:cadastrar_jogo' %}" class="btn btn-cyan btn-sm">
+                <i class="bi bi-plus-lg me-1"></i> Novo Jogo
+              </a>
+            </li>
+
+            <!-- Menu do Usuário Logado -->
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 text-light" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-weight: bold; background: linear-gradient(135deg, #00e5ff, #8b5cf6) !important;">
+                  {{ user.username|make_list|first|upper }}
+                </div>
+                <span>{{ user.first_name|default:user.username }}</span>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark border-secondary shadow" aria-labelledby="userDropdown">
+                <li class="px-3 py-1 text-muted small">
+                  Conectado como <strong>@{{ user.username }}</strong>
+                </li>
+                <li><hr class="dropdown-divider border-secondary"></li>
+                <li>
+                  <a class="dropdown-item" href="{% url 'games:meus_jogos' %}">
+                    <i class="bi bi-collection-play me-2 text-info"></i> Meus Jogos Cadastrados
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="{% url 'games:cadastrar_jogo' %}">
+                    <i class="bi bi-cloud-upload me-2 text-success"></i> Divulgar Novo Jogo
+                  </a>
+                </li>
+                {% if user.is_staff %}
+                  <li><hr class="dropdown-divider border-secondary"></li>
+                  <li>
+                    <a class="dropdown-item text-warning" href="{% url 'admin:index' %}" target="_blank">
+                      <i class="bi bi-shield-lock me-2"></i> Painel Administrativo
+                    </a>
+                  </li>
+                {% endif %}
+                <li><hr class="dropdown-divider border-secondary"></li>
+                <li>
+                  <a class="dropdown-item text-danger" href="{% url 'logout' %}">
+                    <i class="bi bi-box-arrow-right me-2"></i> Encerrar Sessão
+                  </a>
+                </li>
+              </ul>
+            </li>
+          {% else %}
+            <!-- Usuário Não Logado -->
+            <li class="nav-item">
+              <a class="btn btn-outline-light btn-sm px-3" href="{% url 'login' %}">
+                <i class="bi bi-box-arrow-in-right me-1"></i> Entrar
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="btn btn-cyan btn-sm px-3 d-inline-flex flex-column align-items-center justify-content-center text-center py-1 text-nowrap" href="{% url 'cadastro' %}" style="line-height: 1.1;">
+                <i class="bi bi-person-plus fs-5 mb-1"></i>
+                <span class="text-nowrap" style="font-size: 0.75rem; font-weight: 700; white-space: nowrap;">Cadastrar-se</span>
+              </a>
+            </li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Flash Messages Alerts -->
+  <div class="container mt-3">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'success' %}success{% else %}info{% endif %} alert-dismissible fade show border-0 shadow-sm" role="alert">
+          <div class="d-flex align-items-center gap-2">
+            {% if message.tags == 'success' %}
+              <i class="bi bi-check-circle-fill fs-5"></i>
+            {% elif message.tags == 'error' %}
+              <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+            {% else %}
+              <i class="bi bi-info-circle-fill fs-5"></i>
+            {% endif %}
+            <div>{{ message }}</div>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  </div>
+
+  <!-- Main Content Block -->
+  <main class="py-4 position-relative" style="z-index: 1;">
+    {% block content %}
+    {% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="py-4 text-center text-muted">
+    <div class="container">
+      <div class="row align-items-center gy-3">
+        <div class="col-md-4 text-md-start">
+          <span class="brand-font fs-5 text-light">GAME<span class="brand-accent">HUB</span></span>
+          <p class="small mb-0 text-secondary">Plataforma colaborativa de divulgação e avaliação de jogos.</p>
+        </div>
+        <div class="col-md-4">
+          <p class="small mb-1 text-light">
+            Desenvolvido para <strong>Programação III</strong> &bull; ADS IFRO
+          </p>
+          <span class="badge bg-secondary me-1"><i class="bi bi-filetype-py"></i> Python 3.13</span>
+          <span class="badge bg-success me-1"><i class="bi bi-code-slash"></i> Django 6.1</span>
+          <span class="badge bg-info text-dark"><i class="bi bi-bootstrap"></i> Bootstrap 5.3</span>
+        </div>
+        <div class="col-md-4 text-md-end">
+          <a href="{% url 'games:index' %}" class="text-decoration-none text-secondary me-3 small">Início</a>
+          <a href="{% url 'games:cadastrar_jogo' %}" class="text-decoration-none text-secondary me-3 small">Cadastrar Jogo</a>
+          <a href="{% url 'admin:index' %}" class="text-decoration-none text-secondary small">Admin</a>
+        </div>
+      </div>
+      <hr class="border-secondary my-3">
+      <p class="small mb-0 text-secondary">&copy; {% now "Y" %} GameHub. Todos os direitos reservados.</p>
+    </div>
+  </footer>
+
+  <!-- Bootstrap 5.3 JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
