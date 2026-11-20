@@ -5,9 +5,7 @@ Harison Manoel dos Santos Matos.
 ## Turma:
 4º período de ADS de 2026.
 ## Link para o projeto no PythonAnywhere: 
-(Adicione aqui o link gerado após o deploy, ex: https://SEU_USUARIO.pythonanywhere.com/)
-## Link para o vídeo de apresentação do projeto:
-
+https://harison01.pythonanywhere.com
 
 
 
@@ -15,6 +13,7 @@ Harison Manoel dos Santos Matos.
 
 
 ## Como Executar o Projeto Localmente
+
 
 ### 1. Criar o Ambiente Virtual (venv)
 No terminal, dentro da pasta raiz do projeto, execute:
@@ -28,7 +27,7 @@ python -m venv .venv
   .\.venv\Scripts\Activate.ps1
   ```
   *(Caso ocorra erro de execução de scripts no PowerShell, execute antes: `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`)*
-
+  
 ### 3. Instalar as Dependências do Projeto
 Com o ambiente virtual ativado, instale os pacotes listados no `requirements.txt`:
 ```bash
@@ -58,7 +57,6 @@ Para validar os relacionamentos entre modelos, controle de permissões e cadastr
 ```bash
 python manage.py test
 ```
-
 
 
 ##  Credenciais Pré-configuradas para Testes (seed_data.py)
